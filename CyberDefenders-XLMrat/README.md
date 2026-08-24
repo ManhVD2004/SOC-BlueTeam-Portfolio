@@ -25,7 +25,9 @@
     3.  **Bước 3 (Frame 12):** Chỉ khoảng 1 giây sau, một yêu cầu HTTP GET mới xuất hiện tại Frame 12, tải file `mdm.jpg` từ chính IP và Port của máy chủ điều khiển `45.126.209.4:222`.
 *   **Kết luận:** File `mdm.jpg` chính là payload giai đoạn 1 (First Stage) được gọi về thông qua script mồi nhử `xlm.txt`. Do đó, URL chính xác tải malware là: `http://45.126.209.4:222/mdm.jpg`.
 *   **Bằng chứng:**
-    *(Bạn thay dòng này bằng cú pháp chèn ảnh: ![Wireshark Filter](images/q1_filter.png))*
+    ![Lọc giao thức HTTP tải 2 file xlm.txt và mdm.jpg](images/q1_1.png)
+    ![Theo dõi luồng HTTP Stream của xlm.txt](images/q1_2.png)
+    ![Chi tiết code VBScript lẩn tránh và thực thi](images/q1_3.png)
 *   **Flag:** `http://45.126.209.4:222/mdm.jpg`
 
 ---
