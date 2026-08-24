@@ -6,7 +6,7 @@
 
 ### Q1: The attacker successfully executed a command to download the first stage of the malware. What is the URL from which the first malware stage was installed?
 
-*   **Tư duy điều tra:** Mở file pcap bằng Wireshark, lọc giao thức HTTP để tìm các file được tải về.
+*   **Cách làm:** Mở file pcap bằng Wireshark, lọc giao thức HTTP để tìm các file được tải về.
 *   **Thao tác thực hiện:** 
     *   Ở ô filter gõ `http` ta sẽ thấy có 2 file được tải: `xlm.txt` và `mdm.jpg`.
     *   Ở frame số 4 ta sẽ click chuột phải -> **Follow HTTP Stream**.
@@ -32,7 +32,7 @@
 
 ### Q2: Which hosting provider owns the associated IP address?
 
-*   **Tư duy điều tra:** Sử dụng các công cụ OSINT để tra cứu thông tin định danh (ISP/ASN) của địa chỉ IP độc hại `45.126.209.4` đã bóc tách được ở Q1.
+*   **Cách làm:** Sử dụng các công cụ OSINT để tra cứu thông tin định danh (ISP/ASN) của địa chỉ IP độc hại `45.126.209.4` đã bóc tách được ở Q1.
 *   **Thao tác thực hiện:** Truy cập cơ sở dữ liệu của `abuseipdb.com` và nhập IP vào thanh tìm kiếm để kiểm tra thông tin nhà cung cấp dịch vụ lưu trữ (Hosting Provider).
 *   **Bằng chứng:** Kết quả trả về cho thấy ISP quản lý IP này là **ReliableSite.Net LLC**.
     *(Bạn thay dòng này bằng cú pháp chèn ảnh: ![AbuseIPDB](images/q2_abuseipdb.png))*
@@ -42,7 +42,7 @@
 
 ### Q3: By analyzing the malicious scripts, two payloads were identified: a loader and a secondary executable. What is the SHA256 of the malware executable?
 
-*   **Tư duy điều tra:** Khi phân tích HTTP Stream của file `mdm.jpg`, ta nhận thấy đây không phải là một file hình ảnh mà thực chất là một script PowerShell đóng vai trò là Loader (trình tải thứ 2). Bên trong script này chứa 2 biến mã hóa hệ thập lục phân (Hex): `$hexString_bbb` và `$hexString_pe`.
+*   **Cách làm:** Khi phân tích HTTP Stream của file `mdm.jpg`, ta nhận thấy đây không phải là một file hình ảnh mà thực chất là một script PowerShell đóng vai trò là Loader (trình tải thứ 2). Bên trong script này chứa 2 biến mã hóa hệ thập lục phân (Hex): `$hexString_bbb` và `$hexString_pe`.
     *   `$hexString_pe`: Là một module injector (tiêm mã) bằng .NET.
     *   `$hexString_bbb`: Bắt đầu bằng chuỗi `4D_5A_90...` (Tương đương với giá trị MZ trong mã ASCII). Đây chính là chữ ký (signature) đặc trưng của một file thực thi PE (Portable Executable) trên Windows. Kẻ tấn công đã băm nhỏ file mã độc `.exe` thành chuỗi Hex và giấu trong biến này để thực hiện kỹ thuật tiêm mã ngầm (Process Hollowing) vào tiến trình hợp lệ `RegSvcs.exe`.
     Do đó, để lấy mã băm của malware, ta cần trích xuất và giải mã biến `$hexString_bbb`.
@@ -60,7 +60,7 @@
 
 ### Q4: What is the malware family label based on Alibaba?
 
-*   **Tư duy điều tra:** Sử dụng mã băm SHA256 vừa tìm được để tra cứu thông tin nhận diện trên nền tảng phân tích mã độc VirusTotal.
+*   **Cách làm:** Sử dụng mã băm SHA256 vừa tìm được để tra cứu thông tin nhận diện trên nền tảng phân tích mã độc VirusTotal.
 *   **Thao tác thực hiện:** Truy cập VirusTotal, dán mã băm `1eb7b02e18f67420f42b1d94e74f3b6289d92672a0fb1786c30c03d68e81d798` vào thanh tìm kiếm. Tại tab Detection, kiểm tra kết quả nhận diện của engine Alibaba.
 *   **Bằng chứng:** Kết quả quét cho thấy Alibaba nhận diện tệp tin này thuộc họ `Backdoor:MSIL/AsyncRat.a2786761`.
     *(Bạn thay dòng này bằng cú pháp chèn ảnh: ![VirusTotal Detection](images/q4_vt_detection.png))*
@@ -70,7 +70,7 @@
 
 ### Q5: What is the PE header compile (Creation Time) timestamp of the malware?
 
-*   **Tư duy điều tra:** Khai thác siêu dữ liệu (metadata) của file PE đã được VirusTotal phân tích để tìm thời điểm mã độc này được biên dịch (Compile/Creation Time).
+*   **Cách làm:** Khai thác siêu dữ liệu (metadata) của file PE đã được VirusTotal phân tích để tìm thời điểm mã độc này được biên dịch (Compile/Creation Time).
 *   **Thao tác thực hiện:** Vẫn tại trang kết quả của VirusTotal, chuyển sang tab Details. Cuộn xuống phần History để xem trường Creation Time.
 *   **Bằng chứng:** Thời gian biên dịch được ghi nhận là `2023-10-30 15:08:44 UTC`.
     *(Bạn thay dòng này bằng cú pháp chèn ảnh: ![VirusTotal Details](images/q5_vt_details.png))*
@@ -80,7 +80,7 @@
 
 ### Q6: Which LOLBin is leveraged for stealthy process execution in this script? Provide the full path.
 
-*   **Tư duy điều tra:** LOLBin (Living-off-the-Land Binary) là các công cụ, file thực thi hợp lệ có sẵn trên Windows (như `powershell.exe`, `certutil.exe`...) bị hacker lợi dụng để thực thi mã độc. Mục đích của hacker ở đây là lấy file mã độc thật nhét vào bên trong một tiến trình hợp lệ của Windows để nó tàng hình. Kẻ tấn công thường sử dụng các kỹ thuật che giấu chuỗi (String Obfuscation) để giấu đường dẫn đến tiến trình này.
+*   **Cách làm:** LOLBin (Living-off-the-Land Binary) là các công cụ, file thực thi hợp lệ có sẵn trên Windows (như `powershell.exe`, `certutil.exe`...) bị hacker lợi dụng để thực thi mã độc. Mục đích của hacker ở đây là lấy file mã độc thật nhét vào bên trong một tiến trình hợp lệ của Windows để nó tàng hình. Kẻ tấn công thường sử dụng các kỹ thuật che giấu chuỗi (String Obfuscation) để giấu đường dẫn đến tiến trình này.
 *   **Thao tác thực hiện:** Trở lại phân tích mã nguồn PowerShell (đoạn mã ở phần cuối của luồng HTTP Stream 1 từ file `mdm.jpg`), ta quan sát kỹ các dòng gán biến khai báo đường dẫn. Script sử dụng hàm `-replace '#', ''` để loại bỏ tất cả các ký tự `#` rác. Dịch ngược chuỗi này theo cách thủ công, ta sẽ có được đường dẫn hoàn chỉnh.
     *   **Gỡ rối biến `$NA`:** `'C:\W#######indow############s\Mi####cr'` xóa hết `#` đi, ta được đoạn đầu: `C:\Windows\Micr`
     *   **Gỡ rối biến `$AC`:** Lấy biến `$NA` ở trên ghép nối tiếp với đoạn `'osof#####t.NET\Fra###mework\v4.0.303###19\R##egSvc#####s.exe'` (cũng xóa hết `#`): Ghép lại ta được đường dẫn hoàn chỉnh.
@@ -92,7 +92,7 @@
 
 ### Q7: The script is designed to drop several files. List the names of the files dropped by the script.
 
-*   **Tư duy điều tra:** Trong các cuộc tấn công, mã độc thường tự động "drop" (thả) các file phụ trợ xuống ổ cứng của nạn nhân nhằm thiết lập cơ chế duy trì quyền truy cập (Persistence) hoặc thực thi các chuỗi lệnh phức tạp. Cần tìm kiếm các lệnh ghi file (ví dụ: `WriteAllText`, `Out-File`) bên trong mã nguồn để xác định tên các file này.
+*   **Cách làm:** Trong các cuộc tấn công, mã độc thường tự động "drop" (thả) các file phụ trợ xuống ổ cứng của nạn nhân nhằm thiết lập cơ chế duy trì quyền truy cập (Persistence) hoặc thực thi các chuỗi lệnh phức tạp. Cần tìm kiếm các lệnh ghi file (ví dụ: `WriteAllText`, `Out-File`) bên trong mã nguồn để xác định tên các file này.
 *   **Thao tác thực hiện:** Tiếp tục phân tích đoạn cuối của luồng HTTP Stream 1 (từ file `mdm.jpg`), ta phát hiện mã độc sử dụng phương thức `[IO.File]::WriteAllText` để lần lượt tạo và ghi nội dung vào 3 tệp tin tại thư mục `C:\Users\Public\`. Các tệp này bao gồm:
     1.  `Conted.ps1`: Chứa lệnh kích hoạt PowerShell với các tham số ẩn.
     2.  `Conted.bat`: Chứa lệnh thực thi kịch bản VBScript.
