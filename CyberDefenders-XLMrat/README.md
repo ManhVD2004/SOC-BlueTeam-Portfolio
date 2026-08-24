@@ -37,7 +37,7 @@
 *   **Cách làm:** Sử dụng các công cụ OSINT để tra cứu thông tin định danh (ISP/ASN) của địa chỉ IP độc hại `45.126.209.4` đã bóc tách được ở Q1.
 *   **Thao tác thực hiện:** Truy cập cơ sở dữ liệu của `abuseipdb.com` và nhập IP vào thanh tìm kiếm để kiểm tra thông tin nhà cung cấp dịch vụ lưu trữ (Hosting Provider).
 *   **Bằng chứng:** Kết quả trả về cho thấy ISP quản lý IP này là **ReliableSite.Net LLC**.
-    *(Bạn thay dòng này bằng cú pháp chèn ảnh: ![AbuseIPDB](images/q2_abuseipdb.png))*
+    ![Tra cứu IP độc hại trên AbuseIPDB](images/q2.png)
 *   **Flag:** `ReliableSite.Net`
 
 ---
@@ -55,7 +55,9 @@
         *   **From Hex:** Chuyển đổi chuỗi Hex liền mạch trở lại định dạng nhị phân nguyên thủy (Binary) của file `.exe`.
         *   **SHA2:** Đặt Size là 256 để tính toán mã băm SHA256 trực tiếp từ file nhị phân vừa khôi phục.
 *   **Bằng chứng:**
-    *(Bạn thay dòng này bằng cú pháp chèn ảnh: ![CyberChef Output](images/q3_cyberchef.png))*
+    ![Tìm kiếm chuỗi Hex bị giấu trong mdm.jpg](images/q3_1.png)
+    ![Trích xuất biến hexString_bbb](images/q3_2.png)
+    ![Sử dụng CyberChef để khôi phục file nhị phân và tính mã băm SHA256](images/q3_3.png)
 *   **Flag:** `1eb7b02e18f67420f42b1d94e74f3b6289d92672a0fb1786c30c03d68e81d798`
 
 ---
@@ -65,7 +67,7 @@
 *   **Cách làm:** Sử dụng mã băm SHA256 vừa tìm được để tra cứu thông tin nhận diện trên nền tảng phân tích mã độc VirusTotal.
 *   **Thao tác thực hiện:** Truy cập VirusTotal, dán mã băm `1eb7b02e18f67420f42b1d94e74f3b6289d92672a0fb1786c30c03d68e81d798` vào thanh tìm kiếm. Tại tab Detection, kiểm tra kết quả nhận diện của engine Alibaba.
 *   **Bằng chứng:** Kết quả quét cho thấy Alibaba nhận diện tệp tin này thuộc họ `Backdoor:MSIL/AsyncRat.a2786761`.
-    *(Bạn thay dòng này bằng cú pháp chèn ảnh: ![VirusTotal Detection](images/q4_vt_detection.png))*
+    ![Nhận diện họ mã độc AsyncRat trên VirusTotal](images/q4.png)
 *   **Flag:** `AsyncRat`
 
 ---
@@ -75,7 +77,7 @@
 *   **Cách làm:** Khai thác siêu dữ liệu (metadata) của file PE đã được VirusTotal phân tích để tìm thời điểm mã độc này được biên dịch (Compile/Creation Time).
 *   **Thao tác thực hiện:** Vẫn tại trang kết quả của VirusTotal, chuyển sang tab Details. Cuộn xuống phần History để xem trường Creation Time.
 *   **Bằng chứng:** Thời gian biên dịch được ghi nhận là `2023-10-30 15:08:44 UTC`.
-    *(Bạn thay dòng này bằng cú pháp chèn ảnh: ![VirusTotal Details](images/q5_vt_details.png))*
+    ![Kiểm tra thời gian biên dịch Creation Time của file PE](images/q5.png)
 *   **Flag:** `2023-10-30 15:08`
 
 ---
@@ -87,7 +89,7 @@
     *   **Gỡ rối biến `$NA`:** `'C:\W#######indow############s\Mi####cr'` xóa hết `#` đi, ta được đoạn đầu: `C:\Windows\Micr`
     *   **Gỡ rối biến `$AC`:** Lấy biến `$NA` ở trên ghép nối tiếp với đoạn `'osof#####t.NET\Fra###mework\v4.0.303###19\R##egSvc#####s.exe'` (cũng xóa hết `#`): Ghép lại ta được đường dẫn hoàn chỉnh.
 *   **Bằng chứng:**
-    *(Bạn thay dòng này bằng cú pháp chèn ảnh: ![LOLBin Obfuscation](images/q6_lolbin.png))*
+    ![Kỹ thuật làm rối (Obfuscation) đường dẫn LOLBin](images/q6.png)
 *   **Flag:** `C:\Windows\Microsoft.NET\Framework\v4.0.30319\RegSvcs.exe`
 
 ---
@@ -100,5 +102,6 @@
     2.  `Conted.bat`: Chứa lệnh thực thi kịch bản VBScript.
     3.  `Conted.vbs`: Chứa mã VBScript để chạy file batch một cách hoàn toàn vô hình (visibility = 0).
 *   **Bằng chứng:**
-    *(Bạn thay dòng này bằng cú pháp chèn ảnh: ![Dropped Files](images/q7_dropped.png))*
+    ![Lệnh tạo các file Conted.ps1 và Conted.bat](images/q7_1.png)
+    ![Lệnh tạo file Conted.vbs và thiết lập Scheduled Task persistence](images/q7_2.png)
 *   **Flag:** `Conted.ps1,Conted.bat,Conted.vbs`
