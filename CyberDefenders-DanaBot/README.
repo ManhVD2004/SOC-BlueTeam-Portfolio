@@ -1,0 +1,59 @@
+# CyberDefenders Lab: DanaBot Writeup
+
+**Category:** Network Forensics | **Difficulty:** Easy
+
+**Scenario:** The SOC team has detected suspicious activity in the network traffic, revealing that a machine has been compromised. Sensitive company information has been stolen. Your task is to use Network Capture (PCAP) files and Threat Intelligence to investigate the incident and determine how the breach occurred.
+
+---
+
+### Q1: Which IP address was used by the attacker during the initial access?
+
+*   **Cách làm:** Xác định địa chỉ IP độc hại đã cung cấp file mã độc giai đoạn 1 (Initial Access).
+*   **Thao tác thực hiện:** Mở file PCAP bằng Wireshark. Sử dụng tính năng trích xuất file: vào **File -> Export Objects -> HTTP**. Sắp xếp theo cột `Hostname` hoặc `Content Type`. Tìm một địa chỉ IP trực tiếp host một file có định dạng lạ/khả nghi (không phải các trang web thông thường).
+*   **Bằng chứng:** *(Chụp ảnh màn hình cửa sổ Export Objects hoặc gói tin HTTP GET hiển thị địa chỉ IP này)*
+*   **Flag:** `[Điền IP định dạng **.***.***.*** vào đây]`
+
+---
+
+### Q2: What is the name of the malicious file used for initial access?
+
+*   **Cách làm:** Tìm tên của file mã độc đầu tiên được tải xuống.
+*   **Thao tác thực hiện:** Cũng tại cửa sổ **Export Objects -> HTTP**, nhìn sang cột `Filename`. Tìm file khả nghi khớp với định dạng `********_***.**` (ví dụ: `document_123.js`, `invoice_abc.zip`...).
+*   **Bằng chứng:** *(Chụp ảnh dòng chứa tên file đó trong Wireshark)*
+*   **Flag:** `[Điền tên file vào đây]`
+
+---
+
+### Q3: What is the SHA-256 hash of the malicious file used for initial access?
+
+*   **Cách làm:** Tính toán mã băm SHA-256 của file vừa tìm được.
+*   **Thao tác thực hiện:** Bấm nút **Save** ở cửa sổ Export Objects để lưu file khả nghi đó ra máy tính Kali của bạn. Mở Terminal, chạy lệnh `sha256sum <tên_file>` (hoặc ném file đó lên VirusTotal) để lấy mã băm.
+*   **Bằng chứng:** *(Chụp ảnh màn hình Terminal hoặc giao diện VirusTotal)*
+*   **Flag:** `[Điền mã SHA-256 dài 64 ký tự vào đây]`
+
+---
+
+### Q4: Which process was used to execute the malicious file?
+
+*   **Cách làm:** Xác định tiến trình hệ thống (process) mặc định của Windows được dùng để thực thi file kịch bản.
+*   **Thao tác thực hiện:** Dựa vào phần mở rộng (đuôi) của file ở Q2 (nếu nó là `.js` hoặc `.vbs`), hệ điều hành Windows sẽ sử dụng công cụ Windows Script Host để chạy. Tiến trình thực thi của nó có 7 chữ cái. Khớp với định dạng `*******.***`, đáp án chính xác là tiến trình `wscript.exe`.
+*   **Bằng chứng:** *(Bạn có thể ghi chú ngắn gọn kiến thức OSINT về việc chạy file JS/VBS trên Windows)*
+*   **Flag:** `wscript.exe`
+
+---
+
+### Q5: What is the file extension of the second malicious file utilized by the attacker?
+
+*   **Cách làm:** Tìm file mã độc giai đoạn 2 (Second-stage payload) được file ban đầu tải về.
+*   **Thao tác thực hiện:** Quay lại cửa sổ **Export Objects -> HTTP**. Sau khi tải file ban đầu, nạn nhân sẽ tiếp tục tải một file lớn hơn nhiều (thường là payload thực sự). Nhìn xem file thứ 2 này có phần mở rộng (đuôi) là gì. Dòng mã độc DanaBot cực kỳ thích sử dụng file Dynamic Link Library (đuôi `.dll`).
+*   **Bằng chứng:** *(Chụp ảnh file thứ 2 trong danh sách Export Objects)*
+*   **Flag:** `[Điền đuôi file .*** vào đây]`
+
+---
+
+### Q6: What is the MD5 hash of the second malicious file?
+
+*   **Cách làm:** Lấy mã băm MD5 của file mã độc giai đoạn 2.
+*   **Thao tác thực hiện:** Tương tự Q3, **Save** cái file thứ 2 đó ra máy tính. Chạy lệnh `md5sum <tên_file_2>` trong Terminal hoặc đẩy lên VirusTotal để lấy chuỗi MD5.
+*   **Bằng chứng:** *(Chụp ảnh kết quả MD5)*
+*   **Flag:** `[Điền mã MD5 dài 32 ký tự vào đây]`
