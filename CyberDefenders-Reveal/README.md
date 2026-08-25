@@ -1,8 +1,8 @@
-# Phân tích sự cố (Incident Response) - Endpoint & Memory Forensics
+# CyberDefenders Lab: Reveal Writeup
 
-**Mức độ:** Dễ | **Công cụ:** Volatility 3
+**Category:** Endpoint / Memory Forensics | **Difficulty:** Easy
 
-**Kịch bản:** Bạn là chuyên gia điều tra kỹ thuật số tại một tổ chức tài chính. Hệ thống SIEM vừa phát cảnh báo về các dấu hiệu hoạt động bất thường trên một máy trạm có quyền truy cập vào dữ liệu tài chính nhạy cảm. Nghi ngờ có sự cố xâm nhập, bạn nhận được bản sao bộ nhớ (memory dump) từ máy trạm bị ảnh hưởng. Nhiệm vụ của bạn là phân tích bộ nhớ để tìm kiếm các Dấu hiệu Thỏa hiệp (IOCs), truy vết nguồn gốc dị thường và đánh giá phạm vi ảnh hưởng để đưa ra phương án ngăn chặn hiệu quả.
+**Scenario:** You are a forensic investigator at a financial institution, and your SIEM flagged unusual activity on a workstation with access to sensitive financial data. Suspecting a breach, you received a memory dump from the compromised machine. Your task is to analyze the memory for signs of compromise, trace the anomaly's origin, and assess its scope to contain the incident effectively.
 
 ---
 
