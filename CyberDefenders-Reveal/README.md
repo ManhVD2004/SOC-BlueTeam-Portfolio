@@ -1,5 +1,8 @@
-# Phân tích sự cố (Incident Response) - Endpoint & Memory Forensics
-**Mức độ:** Dễ | **Công cụ:** Volatility 3
+# CyberDefenders Lab: Reveal Writeup
+
+**Category:** Endpoint Forensics | **Difficulty:** Easy
+
+**Scenario:** You are a forensic investigator at a financial institution, and your SIEM flagged unusual activity on a workstation with access to sensitive financial data. Suspecting a breach, you received a memory dump from the compromised machine. Your task is to analyze the memory for signs of compromise, trace the anomaly's origin, and assess its scope to contain the incident effectively.
 
 ---
 
