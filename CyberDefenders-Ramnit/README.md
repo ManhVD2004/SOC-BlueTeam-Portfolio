@@ -49,9 +49,12 @@
 ### Q5: Hashes serve as unique identifiers for files, assisting in the detection of similar threats across different machines. What is the SHA1 hash of the malware executable?
 
 *   **Cách làm:** Quét cấu trúc dữ liệu tệp trong bộ nhớ, trích xuất tệp tin thực thi và tính toán mã băm định danh.
-*   **Thao tác thực hiện:** Tiến hành sử dụng plugin `windows.filescan` nhằm định vị địa chỉ vật lý (Offset/Virtual Address) của tiến trình độc hại trong RAM. Sau khi xác định được địa chỉ `0xca82b85307f0`, sử dụng plugin `windows.dumpfiles` để kết xuất tệp tin ra môi trường phân tích. Cuối cùng, áp dụng tiện ích `sha1sum` để tính toán mã băm của tệp, thu được chuỗi SHA-1 hợp lệ.
+*   **Thao tác thực hiện:** Tiến hành sử dụng plugin `windows.filescan` nhằm định vị địa chỉ vật lý của tiến trình độc hại trong RAM. Sau khi xác định được địa chỉ `0xca82b85307f0`, sử dụng plugin `windows.dumpfiles` để kết xuất tệp tin ra môi trường phân tích.
 *   **Bằng chứng:**
-    ![Q5 - Kết quả tính toán mã băm SHA1](images/q5.png)
+    *   Xác định offset và kết xuất tệp tin bằng `windows.dumpfiles`:
+        ![Q5 - Dump file từ bộ nhớ](images/q5_1.png)
+    *   Tính toán mã băm SHA1 của tệp tin vừa kết xuất bằng lệnh `sha1sum`:
+        ![Q5 - Kết quả tính toán mã băm SHA1](images/q5_2.png)
 *   **Flag:** `280c9d36039f9432433893dee6126d72b9112ad2`
 
 ---
