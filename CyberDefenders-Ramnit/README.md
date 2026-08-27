@@ -9,7 +9,7 @@
 ### Q1: What is the name of the process responsible for the suspicious activity?
 
 *   **Cách làm:** Phân tích cấu trúc cây tiến trình (Process Tree) để phát hiện các bất thường về tên gọi hoặc vị trí thực thi.
-*   **Thao tác thực hiện:** Sử dụng plugin `windows.pstree` của nền tảng Volatility 3 để tái tạo hệ thống phân cấp tiến trình từ tệp tin dump (`Ramnit.dmp`). Rà soát danh sách trả về, đặc biệt lưu ý các tiến trình trực thuộc `explorer.exe` (PID 4568). Hệ thống ghi nhận một tiến trình đáng ngờ mang tên `ChromeSetup.exe` (PID 4628). Việc một tệp tin cài đặt duy trì trạng thái hoạt động ngầm (background service) là dấu hiệu điển hình của kỹ thuật giả mạo (Masquerading).
+*   **Thao tác thực hiện:** Sử dụng plugin `windows.pstree` của nền tảng Volatility 3 để tái tạo hệ thống phân cấp tiến trình. Rà soát danh sách trả về, hệ thống xác định được một tiến trình ngoại lai mang tên `ChromeSetup.exe` (PID: 4628, PPID: 4568) đang chạy ngầm dưới trướng của tiến trình hệ thống `explorer.exe`. 
 *   **Bằng chứng:**
     ![Q1 - Tiến trình đáng ngờ trên pstree](images/q1.png)
 *   **Flag:** `ChromeSetup.exe`
@@ -19,7 +19,7 @@
 ### Q2: What is the exact path of the executable for the malicious process?
 
 *   **Cách làm:** Khai thác dữ liệu đầu ra của quá trình phân tích cây tiến trình để định vị thư mục gốc.
-*   **Thao tác thực hiện:** Từ bảng kết quả của lệnh `windows.pstree`, tiến hành kiểm tra cột *Path* tương ứng với tiến trình `ChromeSetup.exe` (PID 4628). Dữ liệu hệ thống chỉ ra rằng tệp thực thi này được khởi chạy từ thư mục Downloads của người dùng, củng cố thêm giả thuyết đây không phải là một tiến trình chuẩn của hệ điều hành.
+*   **Thao tác thực hiện:** Từ bảng kết quả của lệnh `windows.pstree`, tiến hành kiểm tra cột dữ liệu tương ứng với tiến trình `ChromeSetup.exe` (PID 4628). Dữ liệu hệ thống chỉ ra rằng tệp thực thi này được khởi chạy trực tiếp từ thư mục Downloads của người dùng, xác nhận đây là một tệp tin độc hại ngụy trang.
 *   **Bằng chứng:**
     ![Q2 - Đường dẫn thực thi của tiến trình](images/q2.png)
 *   **Flag:** `C:\Users\alex\Downloads\ChromeSetup.exe`
@@ -28,52 +28,48 @@
 
 ### Q3: Identifying network connections is crucial for understanding the malware's communication strategy. What IP address did the malware attempt to connect to?
 
-*   **Cách làm:** Rà soát không gian bộ nhớ (Pool Scanning) để trích xuất các kết nối mạng lịch sử hoặc đã bị đóng.
-*   **Thao tác thực hiện:** Do tính chất ngắt kết nối liên tục của mã độc, việc sử dụng plugin `windows.netstat` có thể không đem lại kết quả. Tiến hành sử dụng plugin `windows.netscan` kết hợp với công cụ lọc (grep) nhằm tìm kiếm toàn bộ các artifact mạng liên quan đến PID 4628 hoặc từ khóa "Chrome":
-    `python3 vol.py -f Ramnit.dmp windows.netscan | grep 4628`
-    Từ kết quả trả về, xác định địa chỉ IP tại cột *Foreign Address* / *Dest IP*. Đây chính là máy chủ Điều khiển & Ra lệnh (C2) mà mã độc đã liên lạc.
+*   **Cách làm:** Rà soát không gian bộ nhớ để trích xuất các dấu vết kết nối mạng ngoại vi.
+*   **Thao tác thực hiện:** Sử dụng plugin `windows.netscan` kết hợp với công cụ lọc (grep) nhằm tìm kiếm toàn bộ các artifact mạng liên quan đến mã PID 4628. Kết quả truy xuất cho thấy tiến trình độc hại đã thực hiện kết nối (ở các trạng thái CLOSED và SYN_SENT) tới một máy chủ có địa chỉ IP công cộng là `58.64.204.181`.
 *   **Bằng chứng:**
     ![Q3 - Artifact kết nối mạng qua lệnh netscan](images/q3.png)
-*   **Flag:** `[Điền địa chỉ IP thu được từ terminal]`
+*   **Flag:** `58.64.204.181`
 
 ---
 
 ### Q4: To determine the specific geographical origin of the attack, Which city is associated with the IP address the malware communicated with?
 
-*   **Cách làm:** Ứng dụng tình báo nguồn mở (OSINT) để trích xuất thông tin định vị địa lý (Geolocation) của cơ sở hạ tầng tấn công.
-*   **Thao tác thực hiện:** Sử dụng địa chỉ IP máy chủ C2 thu được từ Câu 3 để tiến hành truy vấn trên nền tảng cơ sở dữ liệu AbuseIPDB hoặc VirusTotal. Phân tích siêu dữ liệu (Metadata) trả về để xác minh khu vực/thành phố đăng ký của hệ thống mạng này.
+*   **Cách làm:** Ứng dụng tình báo nguồn mở (OSINT) để trích xuất thông tin định vị địa lý (Geolocation).
+*   **Thao tác thực hiện:** Sử dụng địa chỉ IP máy chủ C2 `58.64.204.181` thu được từ Câu 3 để tiến hành truy vấn trên nền tảng AbuseIPDB. Siêu dữ liệu trả về xác nhận địa chỉ IP này thuộc hệ thống mạng được đăng ký tại khu vực Hong Kong.
 *   **Bằng chứng:**
-    ![Q4 - Thông tin định vị địa lý trên hệ thống OSINT](images/q4.png)
-*   **Flag:** `[Điền tên thành phố]`
+    ![Q4 - Thông tin định vị địa lý trên AbuseIPDB](images/q4.png)
+*   **Flag:** `Hong Kong`
 
 ---
 
 ### Q5: Hashes serve as unique identifiers for files, assisting in the detection of similar threats across different machines. What is the SHA1 hash of the malware executable?
 
-*   **Cách làm:** Trích xuất tệp tin thực thi trực tiếp từ bộ nhớ RAM (Process Dumping) và tính toán mã băm định danh.
-*   **Thao tác thực hiện:** Sử dụng plugin `windows.procdump` để cô lập và trích xuất tiến trình mã độc dựa trên PID:
-    `python3 vol.py -f Ramnit.dmp windows.procdump --pid 4628 --dump-dir .`
-    Sau khi tệp tin định dạng `.exe` được kết xuất thành công, sử dụng lệnh `sha1sum` trên hệ thống Linux để tính toán và thu thập chuỗi băm SHA-1 tương ứng.
+*   **Cách làm:** Quét cấu trúc dữ liệu tệp trong bộ nhớ, trích xuất tệp tin thực thi và tính toán mã băm định danh.
+*   **Thao tác thực hiện:** Tiến hành sử dụng plugin `windows.filescan` nhằm định vị địa chỉ vật lý (Offset/Virtual Address) của tiến trình độc hại trong RAM. Sau khi xác định được địa chỉ `0xca82b85307f0`, sử dụng plugin `windows.dumpfiles` để kết xuất tệp tin ra môi trường phân tích. Cuối cùng, áp dụng tiện ích `sha1sum` để tính toán mã băm của tệp, thu được chuỗi SHA-1 hợp lệ.
 *   **Bằng chứng:**
     ![Q5 - Kết quả tính toán mã băm SHA1](images/q5.png)
-*   **Flag:** `[Điền chuỗi Hash SHA-1]`
+*   **Flag:** `280c9d36039f9432433893dee6126d72b9112ad2`
 
 ---
 
 ### Q6: Examining the malware's development timeline can provide insights into its deployment. What is the compilation timestamp for the malware?
 
-*   **Cách làm:** Khai thác nền tảng tình báo VirusTotal để phân tích cấu trúc Header của tệp tin PE (Portable Executable).
-*   **Thao tác thực hiện:** Sử dụng mã Hash thu thập được tại Câu 5 để thực hiện truy vấn trên VirusTotal. Điều hướng sang thẻ **Details**, định vị khu vực thông tin lịch sử (History). Trích xuất giá trị thời gian tại trường **Compilation Time** (hoặc Creation Time) thể hiện thời điểm mã độc được lập trình viên biên dịch. Định dạng dữ liệu theo chuẩn `YYYY-MM-DD HH:MM`.
+*   **Cách làm:** Khai thác nền tảng tình báo VirusTotal để phân tích cấu trúc Header của tệp tin.
+*   **Thao tác thực hiện:** Sử dụng mã Hash SHA-1 thu thập được tại Câu 5 để thực hiện truy vấn trên nền tảng VirusTotal. Tại thẻ **Details**, khu vực **History** ghi nhận mốc thời gian hệ thống (Creation Time / Compilation Time) là `2019-12-01 08:36:04 UTC`. Tiến hành chuẩn hóa dữ liệu theo định dạng yêu cầu.
 *   **Bằng chứng:**
     ![Q6 - Mốc thời gian biên dịch trên VirusTotal](images/q6.png)
-*   **Flag:** `[Điền mốc thời gian biên dịch]`
+*   **Flag:** `2019-12-01 08:36`
 
 ---
 
 ### Q7: Identifying the domains associated with this malware is crucial for blocking future malicious communications. Can you provide the domain connected to the malware?
 
-*   **Cách làm:** Phân tích đồ thị liên kết mạng (Network Graph/Relations) để lập bản đồ các tên miền liên quan đến hệ thống C2.
-*   **Thao tác thực hiện:** Dựa trên báo cáo tổng hợp tại VirusTotal, truy cập thẻ **Relations**. Phân tích danh sách tại khu vực *Contacted Domains* hoặc *DNS Resolutions* để xác định tên miền độc hại mà tệp tin hoặc máy chủ C2 đã thực hiện kết nối tới.
+*   **Cách làm:** Phân tích đồ thị liên kết mạng để lập bản đồ các tên miền liên quan đến cơ sở hạ tầng độc hại.
+*   **Thao tác thực hiện:** Dựa trên báo cáo tổng hợp tại VirusTotal, điều hướng sang thẻ **Relations**. Tại khu vực *Contacted Domains*, hệ thống ghi nhận một tên miền độc hại có liên kết trực tiếp với mã độc này là `dnsnb8.net`. 
 *   **Bằng chứng:**
     ![Q7 - Tên miền độc hại trên thẻ Relations](images/q7.png)
-*   **Flag:** `[Điền tên miền liên kết]`
+*   **Flag:** `dnsnb8.net`
