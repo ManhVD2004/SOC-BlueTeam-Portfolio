@@ -35,4 +35,30 @@
 
 ---
 
-### Q4: From the domains mentioned in Q3, a DNS registrar was predominantly used by the threat actor to host their harmful content, enabling the malware's
+### Q4: From the domains mentioned in Q3, a DNS registrar was predominantly used by the threat actor to host their harmful content, enabling the malware's functionality. Can you specify the Registrar INC?
+*   **Cách làm:** Kiểm tra thông tin đăng ký (registrar) của các domain đã xác định ở Q3.
+*   **Thao tác thực hiện:** Tại mục **Contacted Domains** trên VirusTotal, kiểm tra thông tin WHOIS/Registrar của từng domain, xác định registrar được sử dụng phổ biến nhất để lưu trữ nội dung độc hại là `NameCheap`.
+*   **Bằng chứng:**
+    ![Q4 - Registrar của các domain độc hại](images/q4.png)
+*   **Flag:** `NameCheap`
+
+---
+
+### Q5: Could you specify the threat actor linked to the sample provided?
+*   **Cách làm:** Tra cứu thông tin threat actor liên quan đến mẫu trên MITRE ATT&CK / VirusTotal Threat Intel.
+*   **Thao tác thực hiện:** Trên **MITRE ATT&CK**, mẫu được xác định liên quan đến nhóm `TA551`. Kiểm tra thêm mục Associated Group của `TA551`, xác định được tên gọi khác (alias) của nhóm này là `Gold Cabin`.
+*   **Bằng chứng:**
+    ![Q5 - Group TA551 trên MITRE ATT&CK](images/q5_1.png)
+    ![Q5 - Associated Group: Gold Cabin](images/q5_2.png)
+*   **Flag:** `Gold Cabin`
+
+---
+
+### Q6: In the Execution phase, what function does the malware employ to fetch extra payloads onto the system?
+*   **Cách làm:** Phân tích hành vi thực thi (Behavior/Execution) của mẫu bằng sandbox (Recorded Future Triage) để xác định API function được gọi.
+*   **Thao tác thực hiện:** Trong báo cáo sandbox, tại phần API monitoring/Execution phase, ghi nhận mã độc gọi hàm Windows API `URLDownloadToFileA` để tải thêm payload từ các domain độc hại về máy nạn nhân. Hàm này cho phép tải file trực tiếp từ internet, giúp mã độc lấy và thực thi thêm các thành phần độc hại, mở rộng khả năng hoạt động và duy trì trên hệ thống bị nhiễm.
+
+    Hậu tố `A` trong `URLDownloadToFileA` chỉ ra hàm sử dụng bảng mã **ANSI** để xử lý chuỗi ký tự (ngược lại, hậu tố `W` — ví dụ `URLDownloadToFileW` — sử dụng bảng mã **Unicode**). Sự khác biệt này liên quan đến khả năng tương thích: các hệ thống/ứng dụng cũ thường dùng ANSI, trong khi hệ thống hiện đại thường mặc định dùng Unicode. Trong trường hợp này, mẫu độc hại sử dụng cụ thể biến thể ANSI.
+*   **Bằng chứng:**
+    ![Q6 - API Call URLDownloadToFileA trong Execution phase](images/q6.png)
+*   **Flag:** `URLDownloadToFileA`
