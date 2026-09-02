@@ -38,12 +38,7 @@
 
 ### Q4: By examining Windows Mail artifacts, we found an email address mentioning three IP addresses of servers that are at risk or compromised. What are the IP addresses?
 *   **Cách làm:** Xác định vị trí file lưu dữ liệu email của Windows Mail, trích xuất chuỗi ký tự đọc được và lọc theo định dạng IPv4 bằng regex.
-*   **Thao tác thực hiện:** Windows Mail hoạt động dưới dạng ứng dụng UWP thuộc gói `microsoft.windowscommunicationsapps`. File cơ sở dữ liệu `HxStore.hxd` — lưu nội dung email, header và metadata ở dạng nhị phân — được tìm thấy tại đường dẫn: Users\ethan\AppData\Local\Packages\microsoft.windowscommunicationsapps_8wekyb3d8bbwe\LocalState\HxStore.hxd
-*       Export file này bằng FTK Imager, sau đó trên **Terminal (Kali Linux)**, kết hợp `strings` với regex để lọc các chuỗi ký tự dạng địa chỉ IPv4 đọc được từ file binary:
-```bash
-    strings HxStore.hxd | grep -E "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"
-```
-    Kết quả trả về nội dung email chứa cảnh báo về các server bị ảnh hưởng, kèm theo 3 địa chỉ IP tương ứng.
+*   **Thao tác thực hiện:** Windows Mail hoạt động dưới dạng ứng dụng UWP thuộc gói `microsoft.windowscommunicationsapps`. File cơ sở dữ liệu `HxStore.hxd` — lưu nội dung email, header và metadata ở dạng nhị phân — được tìm thấy tại đường dẫn `Users\ethan\AppData\Local\Packages\microsoft.windowscommunicationsapps_8wekyb3d8bbwe\LocalState\HxStore.hxd`. Export file này bằng FTK Imager, sau đó trên **Terminal (Kali Linux)**, kết hợp lệnh `strings` với regex để lọc các chuỗi ký tự dạng địa chỉ IPv4 đọc được từ file binary: `strings HxStore.hxd | grep -E "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"`. Kết quả trả về nội dung email chứa cảnh báo về các server bị ảnh hưởng, kèm theo 3 địa chỉ IP tương ứng.
 *   **Bằng chứng:**
     ![Q4 - Đường dẫn file HxStore.hxd trong FTK Imager](images/q4_1.png)
     ![Q4 - Kết quả lọc IP bằng strings + regex](images/q4_2.png)
