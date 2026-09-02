@@ -43,3 +43,56 @@
     ![Q4 - Đường dẫn file HxStore.hxd trong FTK Imager](images/q4_1.png)
     ![Q4 - Kết quả lọc IP bằng strings + regex](images/q4_2.png)
 *   **Flag:** `145.67.29.88,212.33.10.112,192.168.16.128`
+
+---
+
+### Q5: By examining the malicious executable, we found that it uses an obfuscated PowerShell script to decrypt specific files. What predefined password does the script use for encryption?
+*   **Cách làm:** Trích xuất chuỗi ký tự từ file thực thi độc hại bằng `strings`, sau đó giải mã đoạn base64 tìm được bằng CyberChef.
+*   **Thao tác thực hiện:** Export file `IMF-Info.pdf.exe` từ FTK Imager ra môi trường phân tích. Chạy lệnh `strings IMF-Info.pdf.exe > strings_output.txt` để lưu toàn bộ chuỗi ký tự vào file text. Mở file này, phát hiện 1 đoạn code PowerShell bị obfuscate nhiều lớp bằng kỹ thuật đảo ngược chuỗi (`Reverse`) kết hợp mã hóa **Base64**. Copy đoạn chuỗi đó, đưa vào **CyberChef** với recipe `Reverse` (Character) → `From Base64` để giải mã, thu được password định sẵn dùng cho việc mã hóa.
+*   **Bằng chứng:**
+    ![Q5 - Lệnh strings trích xuất chuỗi từ file exe](images/q5_1.png)
+    ![Q5 - Đoạn code obfuscate base64 trong strings_output.txt](images/q5_2.png)
+    ![Q5 - Giải mã bằng CyberChef, thu được password](images/q5_3.png)
+*   **Flag:** `Imf!nfo#2025Sec$`
+
+---
+
+### Q6: After identifying how the script works, decrypt the files and submit the secret string.
+*   **Cách làm:** Trích xuất các file `.enc` bị mã hóa, phân tích cơ chế mã hóa AES trong script gốc, sau đó viết script đảo ngược (decrypt) để khôi phục file.
+*   **Thao tác thực hiện:** Export 2 file bị mã hóa `IMF-Secret.enc` và `IMF-Mission.enc` từ thư mục Desktop của user `ethan` (`C:\Users\ethan\Desktop\`) bằng FTK Imager. Phân tích script PowerShell độc hại đã giải mã ở Q5, xác định cơ chế mã hóa sử dụng **AES-CBC (khóa 256-bit, IV 16-byte)**, kết hợp hàm dẫn xuất khóa `Rfc2898DeriveBytes` (10,000 iterations) với password đã thu hồi `Imf!nfo#2025Sec$` và salt cố định (`0x01` đến `0x08`).
+
+    Vì thuật toán này đối xứng, chỉ cần đảo ngược script gốc — thay `$aes.CreateEncryptor()` bằng `$aes.CreateDecryptor()`, và trỏ input là các file `.enc` thay vì `.pdf` — để khôi phục lại nội dung gốc. Chạy script decrypt tùy chỉnh này trên 2 file `.enc` đã export, kết quả sinh ra 2 file `_decrypted.pdf` chứa nội dung gốc. Mở file đã giải mã, tìm thấy secret string.
+*   **Script giải mã (rút gọn từ script mã hóa gốc):**
+```powershell
+    $password = "Imf!nfo#2025Sec$"
+    $salt = [Byte[]](0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08)
+    $iterations = 10000
+    $keySize = 32
+    $ivSize = 16
+    $deriveBytes = New-Object System.Security.Cryptography.Rfc2898DeriveBytes($password, $salt, $iterations)
+    $key = $deriveBytes.GetBytes($keySize)
+    $iv = $deriveBytes.GetBytes($ivSize)
+
+    $inputFiles = @("IMF-Secret.enc", "IMF-Mission.enc")
+    foreach ($inputFile in $inputFiles) {
+        $outputFile = $inputFile -replace '\.enc$', '_decrypted.pdf'
+        $aes = [System.Security.Cryptography.Aes]::Create()
+        $aes.Key = $key
+        $aes.IV = $iv
+        $aes.Mode = [System.Security.Cryptography.CipherMode]::CBC
+        $aes.Padding = [System.Security.Cryptography.PaddingMode]::PKCS7
+        $decryptor = $aes.CreateDecryptor()
+        $cipherBytes = [System.IO.File]::ReadAllBytes($inputFile)
+        $outStream = New-Object System.IO.FileStream($outputFile, [System.IO.FileMode]::Create)
+        $cryptoStream = New-Object System.Security.Cryptography.CryptoStream($outStream, $decryptor, [System.Security.Cryptography.CryptoStreamMode]::Write)
+        $cryptoStream.Write($cipherBytes, 0, $cipherBytes.Length)
+        $cryptoStream.FlushFinalBlock()
+        $cryptoStream.Close()
+        $outStream.Close()
+    }
+```
+*   **Bằng chứng:**
+    ![Q6 - Export file .enc từ Desktop bằng FTK Imager](images/q6_1.png)
+    ![Q6 - Chạy script decrypt thành công](images/q6_2.png)
+    ![Q6 - Nội dung file đã giải mã chứa secret string](images/q6_3.png)
+*   **Flag:** `CyberDefenders{N3v3r_eX3cuTe_F!l3$_dOwnL0ded_fr0m_M@lic10u5_$erV3r}`
